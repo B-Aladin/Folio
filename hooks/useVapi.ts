@@ -197,6 +197,8 @@ export function useVapi(book: IBook) {
                     setLimitError('Session ended due to inactivity. Click the mic to start again.');
                 } else if (errorMessage.includes('network') || errorMessage.includes('connection')) {
                     setLimitError('Connection lost. Please check your internet and try again.');
+                } else if (errorMessage.includes('notfounderror') || errorMessage.includes('device not found') || errorMessage.includes('mic')) {
+                    setLimitError('Microphone not found. Please ensure your mic is connected and try again.');
                 } else {
                     setLimitError('Session ended unexpectedly. Click the mic to start again.');
                 }
