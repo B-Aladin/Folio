@@ -9,10 +9,10 @@ export const UploadSchema = z.object({
   persona: z.string().min(1, "Please select a voice persona"),
   pdfFile: z
     .any()
-    .refine((file) => file instanceof File, "PDF file is required")
-    .refine((file) => file?.size <= MAX_FILE_SIZE, `Max file size is 50MB.`)
+    .refine((file) => !!file && file instanceof File, "PDF file is required")
+    .refine((file) => !file || file?.size <= MAX_FILE_SIZE, `Max file size is 50MB.`)
     .refine(
-      (file) => ACCEPTED_PDF_TYPES.includes(file?.type),
+      (file) => !file || ACCEPTED_PDF_TYPES.includes(file?.type),
       "Only .pdf files are accepted."
     ),
   coverImage: z

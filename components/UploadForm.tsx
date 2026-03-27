@@ -28,7 +28,6 @@ const UploadForm = () => {
 
     useEffect(() => {
         setIsMounted(true);
-        console.log('UploadForm mounted');
     }, []);
 
     const form = useForm<BookUploadFormValues>({
@@ -165,8 +164,13 @@ const UploadForm = () => {
             <div className="new-book-wrapper">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
-                        console.error('Form validation failed:', errors);
-                        toast.error("Please fill in all required fields correctly.");
+                        console.error('Form validation failed details:', JSON.stringify(errors, null, 2));
+                        
+                        const errorMessages = Object.entries(errors)
+                            .map(([field, error]) => `${field}: ${error?.message}`)
+                            .join(', ');
+                        
+                        toast.error(`Validation failed: ${errorMessages || "Check required fields."}`);
                     })} className="space-y-8">
                         {/* 1. PDF File Upload */}
                         <FileUploader
