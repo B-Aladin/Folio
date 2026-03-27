@@ -23,12 +23,9 @@ export const startVoiceSession = async (clerkId: string, bookId: string): Promis
         });
 
         if (sessionCount >= limits.maxSessionsPerMonth) {
-            const { revalidatePath } = await import("next/cache");
-            revalidatePath("/");
-
             return {
                 success: false,
-                error: `You have reached the monthly session limit for your ${plan} plan (${limits.maxSessionsPerMonth}). Please upgrade for more sessions.`,
+                error: `Monthly session limit reached.`,
                 isBillingError: true,
             };
         }

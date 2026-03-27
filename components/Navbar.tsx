@@ -92,9 +92,9 @@ const Navbar = () => {
                             <div className="flex items-center gap-3">
                                 <UserButton />
                                 {user?.firstName && (
-                                    <Link href="/subscriptions" className="nav-user-name">
+                                    <span className="nav-user-name">
                                         {user.firstName}
-                                    </Link>
+                                    </span>
                                 )}
                             </div>
                         )}

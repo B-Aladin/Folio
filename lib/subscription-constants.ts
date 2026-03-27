@@ -1,7 +1,5 @@
 export const PLANS = {
-    FREE: 'free',
-    STANDARD: 'standard',
-    PRO: 'pro',
+    DEFAULT: 'default',
 } as const;
 
 export type PlanType = typeof PLANS[keyof typeof PLANS];
@@ -14,22 +12,10 @@ export interface PlanLimits {
 }
 
 export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
-    [PLANS.FREE]: {
-        maxBooks: 1,
-        maxSessionsPerMonth: 5,
-        maxDurationPerSession: 5,
-        hasSessionHistory: false,
-    },
-    [PLANS.STANDARD]: {
-        maxBooks: 10,
-        maxSessionsPerMonth: 100,
-        maxDurationPerSession: 15,
-        hasSessionHistory: true,
-    },
-    [PLANS.PRO]: {
-        maxBooks: 100,
+    [PLANS.DEFAULT]: {
+        maxBooks: Infinity,
         maxSessionsPerMonth: Infinity,
-        maxDurationPerSession: 60,
+        maxDurationPerSession: 1440, // 24 hours
         hasSessionHistory: true,
     },
 };
