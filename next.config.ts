@@ -1,7 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+    experimental: {
+        serverActions: {
+            bodySizeLimit: '100mb',
+        },
+        turbopackUseSystemTlsCerts: true,
+    },
+    typescript: {
+        ignoreBuildErrors: true,
+    },
+    images: { remotePatterns: [
+            { protocol: 'https', hostname: 'covers.openlibrary.org' },
+            { protocol: 'https', hostname: '3zfzex8txen8xph9.public.blob.vercel-storage.com' },
+        ]}
 };
 
 export default nextConfig;
