@@ -1,40 +1,40 @@
-export type PlanType = 'free' | 'pro' | 'unlimited';
-
-export const PLANS: Record<string, PlanType> = {
+export const PLANS = {
     FREE: 'free',
+    STANDARD: 'standard',
     PRO: 'pro',
-    UNLIMITED: 'unlimited',
-};
+} as const;
+
+export type PlanType = typeof PLANS[keyof typeof PLANS];
 
 export interface PlanLimits {
     maxBooks: number;
     maxSessionsPerMonth: number;
     maxDurationPerSession: number; // in minutes
+    hasSessionHistory: boolean;
 }
 
 export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     [PLANS.FREE]: {
-        maxBooks: 2,
-        maxSessionsPerMonth: 10,
+        maxBooks: 1,
+        maxSessionsPerMonth: 5,
+        maxDurationPerSession: 5,
+        hasSessionHistory: false,
+    },
+    [PLANS.STANDARD]: {
+        maxBooks: 10,
+        maxSessionsPerMonth: 100,
         maxDurationPerSession: 15,
+        hasSessionHistory: true,
     },
     [PLANS.PRO]: {
-        maxBooks: 20,
-        maxSessionsPerMonth: 100,
+        maxBooks: 100,
+        maxSessionsPerMonth: Infinity,
         maxDurationPerSession: 60,
-    },
-    [PLANS.UNLIMITED]: {
-        maxBooks: 1000,
-        maxSessionsPerMonth: 10000,
-        maxDurationPerSession: 240,
+        hasSessionHistory: true,
     },
 };
 
-/**
- * Returns the start of the current billing month (UTC).
- * For a simple implementation, this returns the first day of the current month.
- */
 export const getCurrentBillingPeriodStart = (): Date => {
     const now = new Date();
-    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    return new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
 };

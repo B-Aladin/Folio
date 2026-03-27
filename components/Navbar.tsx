@@ -49,6 +49,7 @@ const Navbar = () => {
                                 priority
                                 className="object-contain w-[100px] sm:w-[120px] md:w-[145px] h-auto
                                            group-hover:opacity-80 group-active:opacity-60 transition-opacity duration-150"
+                                style={{ height: "auto" }}
                             />
                         </button>
                         <Link
@@ -131,6 +132,7 @@ const Navbar = () => {
                             width={600}
                             height={400}
                             className="object-contain max-h-[80vh] w-auto rounded-lg"
+                            style={{ width: "auto" }}
                         />
                     </div>
 

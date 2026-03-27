@@ -3,9 +3,27 @@ import HeroSection from "@/components/HeroSection";
 import BookCard from "@/components/BookCard";
 import {getAllBooks} from "@/lib/actions/book.actions";
 import Search from "@/components/Search";
+import {auth} from "@clerk/nextjs/server";
+import {sampleBooks} from "@/lib/constants";
 
 const Page = async ({ searchParams }: { searchParams: Promise<{ query?: string }> }) => {
     const { query } = await searchParams;
+    const { userId } = await auth();
+
+    if (!userId) {
+        return (
+            <main className="wrapper container">
+                <HeroSection />
+
+                <div className="library-books-grid">
+                    {sampleBooks.map((book) => (
+                        <BookCard key={book._id} title={book.title} author={book.author} coverURL={book.coverURL}
+                                  slug={book.slug} isClickable={false} />
+                    ))}
+                </div>
+            </main>
+        )
+    }
 
     const bookResults = await getAllBooks(query)
     const books = bookResults.success ? bookResults.data ?? [] : []
