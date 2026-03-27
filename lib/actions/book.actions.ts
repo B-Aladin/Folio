@@ -12,17 +12,22 @@ export const getAllBooks = async (search?: string) => {
     try {
         await connectToDatabase();
 
-        let query = {};
+        const { auth } = await import("@clerk/nextjs/server");
+        const { userId } = await auth();
+
+        if (!userId) {
+            return { success: false, error: "Unauthorized" };
+        }
+
+        let query: any = { clerkId: userId };
 
         if (search) {
             const escapedSearch = escapeRegex(search);
             const regex = new RegExp(escapedSearch, 'i');
-            query = {
-                $or: [
-                    { title: { $regex: regex } },
-                    { author: { $regex: regex } },
-                ]
-            };
+            query.$or = [
+                { title: { $regex: regex } },
+                { author: { $regex: regex } },
+            ];
         }
 
         const books = await Book.find(query).sort({ createdAt: -1 }).lean();
@@ -43,9 +48,16 @@ export const checkBookExists = async (title: string) => {
     try {
         await connectToDatabase();
 
+        const { auth } = await import("@clerk/nextjs/server");
+        const { userId } = await auth();
+
+        if (!userId) {
+            return { exists: false, error: "Unauthorized" };
+        }
+
         const slug = generateSlug(title);
 
-        const existingBook = await Book.findOne({slug}).lean();
+        const existingBook = await Book.findOne({slug, clerkId: userId}).lean();
 
         if(existingBook) {
             return {

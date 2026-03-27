@@ -67,6 +67,7 @@ export function useVapi(book: IBook) {
     useEffect(() => {
         const handlers = {
             'call-start': () => {
+                console.log("Vapi Call Started");
                 isStoppingRef.current = false;
                 setStatus('starting'); // AI speaks first, wait for it
                 setCurrentMessage('');
@@ -94,6 +95,7 @@ export function useVapi(book: IBook) {
             },
 
             'call-end': () => {
+                console.log("Vapi Call Ended");
                 // Don't reset isStoppingRef here - delayed events may still fire
                 setStatus('idle');
                 setCurrentMessage('');
@@ -231,16 +233,30 @@ export function useVapi(book: IBook) {
 
     const start = useCallback(async () => {
         if (!userId) {
+            console.log("Cannot start call: userId not found");
             setLimitError('Please sign in to start a voice session.');
             return;
         }
 
+        console.log("Starting session for userId:", userId);
         setLimitError(null);
         setIsBillingError(false);
         setStatus('connecting');
 
         try {
-            // Check session limits and create session record
+            // 1. Fetch token/session config from our secure API
+            const tokenResponse = await fetch('/api/vapi/token', {
+                method: 'POST',
+            });
+            
+            if (!tokenResponse.ok) {
+                throw new Error('Failed to fetch Vapi session configuration');
+            }
+            
+            const { token, assistantId } = await tokenResponse.json();
+            console.log("Session config received:", { token: token ? "✓" : "✗", assistantId });
+
+            // 2. Check session limits and create session record
             const result = await startVoiceSession(userId, book._id);
 
             if (!result.success) {
@@ -251,12 +267,11 @@ export function useVapi(book: IBook) {
             }
 
             sessionIdRef.current = result.sessionId || null;
-            // Note: Server-returned maxDurationMinutes is informational only
-            // The actual limit is enforced by useLatestRef(limits.maxSessionMinutes * 60)
-
+            
             const firstMessage = `Hey, good to meet you. Quick question before we dive in - have you actually read ${book.title} yet, or are we starting fresh?`;
 
-            await getVapi().start(ASSISTANT_ID, {
+            console.log("Calling vapi.start() with assistantId:", assistantId);
+            await getVapi().start(assistantId, {
                 firstMessage,
                 variableValues: {
                     title: book.title,
