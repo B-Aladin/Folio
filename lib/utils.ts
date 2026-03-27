@@ -95,9 +95,8 @@ export async function parsePDFFile(file: File) {
         const pdfjsLib = await import('pdfjs-dist');
 
         if (typeof window !== 'undefined') {
-            // Use a stable CDN for the worker to avoid issues with local asset resolution on Vercel
-            const PDFJS_VERSION = '5.4.296'; // Matches your installed pdfjs-dist version
-            pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.min.mjs`;
+            // Use a local worker to ensure compatibility with Vercel and avoid CDN issues
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '/workers/pdf.worker.min.mjs';
         }
 
         // Read file as array buffer
