@@ -1,10 +1,10 @@
 import React from 'react'
 import HeroSection from "@/components/HeroSection";
+import { sampleBooks } from "../../lib/constants";
 import BookCard from "@/components/BookCard";
 import {getAllBooks} from "@/lib/actions/book.actions";
 import Search from "@/components/Search";
 import {auth} from "@clerk/nextjs/server";
-import {sampleBooks} from "@/lib/constants";
 
 const Page = async ({ searchParams }: { searchParams: Promise<{ query?: string }> }) => {
     const { query } = await searchParams;
