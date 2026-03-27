@@ -27,15 +27,9 @@ export async function POST(req: NextRequest) {
         // If we want to use the assistant, we can also just return the assistant config 
         // if the client side SDK supports it, but the user specifically asked for a token/session based start.
         
-        // Let's assume the user wants a standard way to start which is stable on Vercel.
-        // Actually, the web SDK start() method can take a token or an assistant ID.
-        // The issue might be that public API keys are more prone to rate limits or security ejections.
-        
-        // Vapi documentation suggests using private API key on server to start calls if they are sensitive.
-        // However, usually we can just return the necessary configuration.
-        
+        // Return session config for the frontend
         return NextResponse.json({ 
-            token: VAPI_API_KEY, // In some cases, passing the key from server is safer if it's protected by auth
+            token: VAPI_API_KEY, 
             assistantId: ASSISTANT_ID 
         });
 

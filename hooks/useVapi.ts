@@ -172,8 +172,14 @@ export function useVapi(book: IBook) {
                 }
             },
 
-            error: (error: Error) => {
-                console.error('Vapi error:', error);
+            error: (error: any) => {
+                console.error('Vapi error (full object):', JSON.stringify(error, null, 2));
+                console.error('Vapi error message:', error.message);
+                
+                // Track ejection specific errors
+                if (error.type === 'ejection' || (error.message && error.message.toLowerCase().includes('eject'))) {
+                    console.error('CRITICAL: Call was ejected by Daily.co/Vapi. Check token/config.');
+                }
                 // Don't reset isStoppingRef here - delayed events may still fire
                 setStatus('idle');
                 setCurrentMessage('');
@@ -270,23 +276,29 @@ export function useVapi(book: IBook) {
             
             const firstMessage = `Hey, good to meet you. Quick question before we dive in - have you actually read ${book.title} yet, or are we starting fresh?`;
 
-            console.log("Calling vapi.start() with assistantId:", assistantId);
-            await getVapi().start(assistantId, {
-                firstMessage,
-                variableValues: {
-                    title: book.title,
-                    author: book.author,
-                    bookId: book._id,
-                },
-                voice: {
-                    provider: '11labs' as const,
-                    voiceId: getVoice(voice).id,
-                    model: 'eleven_turbo_v2_5' as const,
-                    stability: VOICE_SETTINGS.stability,
-                    similarityBoost: VOICE_SETTINGS.similarityBoost,
-                    style: VOICE_SETTINGS.style,
-                    useSpeakerBoost: VOICE_SETTINGS.useSpeakerBoost,
-                },
+            console.log("Calling vapi.start() with:", { assistantId, token: token ? "✓" : "✗" });
+            
+            // Start using the token-based options object to ensure the session token is correctly applied
+            await getVapi().start({
+                assistantId,
+                token, // Use the token from our secure server
+                assistantOverrides: {
+                    firstMessage,
+                    variableValues: {
+                        title: book.title,
+                        author: book.author,
+                        bookId: book._id,
+                    },
+                    voice: {
+                        provider: '11labs' as const,
+                        voiceId: getVoice(voice).id,
+                        model: 'eleven_turbo_v2_5' as const,
+                        stability: VOICE_SETTINGS.stability,
+                        similarityBoost: VOICE_SETTINGS.similarityBoost,
+                        style: VOICE_SETTINGS.style,
+                        useSpeakerBoost: VOICE_SETTINGS.useSpeakerBoost,
+                    },
+                }
             });
         } catch (err) {
             console.error('Failed to start call:', err);
