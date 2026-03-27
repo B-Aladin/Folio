@@ -28,6 +28,7 @@ const UploadForm = () => {
 
     useEffect(() => {
         setIsMounted(true);
+        console.log('UploadForm mounted');
     }, []);
 
     const form = useForm<BookUploadFormValues>({
@@ -39,37 +40,43 @@ const UploadForm = () => {
             pdfFile: undefined,
             coverImage: undefined,
         },
+        mode: 'onSubmit',
     });
 
     const onSubmit = async (data: BookUploadFormValues) => {
+        console.log('Starting form submission with data:', data);
         if(!userId) {
-            return toast.error("Please login to upload books");
+            toast.error("Please login to upload books");
+            return;
         }
 
         setIsSubmitting(true);
 
-        // PostHog -> Track Book Uploads...
-
         try {
+            console.log('Checking if book exists:', data.title);
             const existsCheck = await checkBookExists(data.title);
 
             if(existsCheck.exists && existsCheck.book) {
+                console.log('Book already exists, redirecting to slug:', existsCheck.book.slug);
                 toast.info("Book with same title already exists.");
-                form.reset()
-                router.push(`/books/${existsCheck.book.slug}`)
+                form.reset();
+                router.push(`/books/${existsCheck.book.slug}`);
                 return;
             }
 
             const fileTitle = data.title.replace(/\s+/g, '-').toLowerCase();
             const pdfFile = data.pdfFile;
 
+            console.log('Parsing PDF file...');
             const parsedPDF = await parsePDFFile(pdfFile);
 
-            if(parsedPDF.content.length === 0) {
+            if(!parsedPDF.content || parsedPDF.content.length === 0) {
+                console.error('PDF parsing returned no content');
                 toast.error("Failed to parse PDF. Please try again with a different file.");
                 return;
             }
 
+            console.log('Uploading PDF to Vercel Blob...');
             const uploadedPdfBlob = await upload(fileTitle, pdfFile, {
                 access: 'public',
                 handleUploadUrl: '/api/upload',
@@ -79,6 +86,7 @@ const UploadForm = () => {
             let coverUrl: string;
 
             if(data.coverImage) {
+                console.log('Uploading custom cover image...');
                 const coverFile = data.coverImage;
                 const uploadedCoverBlob = await upload(`${fileTitle}_cover.png`, coverFile, {
                     access: 'public',
@@ -87,7 +95,8 @@ const UploadForm = () => {
                 });
                 coverUrl = uploadedCoverBlob.url;
             } else {
-                const response = await fetch(parsedPDF.cover)
+                console.log('Uploading auto-generated PDF cover...');
+                const response = await fetch(parsedPDF.cover);
                 const blob = await response.blob();
 
                 const uploadedCoverBlob = await upload(`${fileTitle}_cover.png`, blob, {
@@ -98,7 +107,8 @@ const UploadForm = () => {
                 coverUrl = uploadedCoverBlob.url;
             }
 
-            const book = await createBook({
+            console.log('Creating book record in database...');
+            const bookResult = await createBook({
                 clerkId: userId,
                 title: data.title,
                 author: data.author,
@@ -109,34 +119,38 @@ const UploadForm = () => {
                 fileSize: pdfFile.size,
             });
 
-            if(!book.success) {
-                toast.error(book.error as string || "Failed to create book");
-                if (book.isBillingError) {
+            if(!bookResult.success) {
+                console.error('Failed to create book:', bookResult.error);
+                toast.error(bookResult.error as string || "Failed to create book");
+                if (bookResult.isBillingError) {
                     router.push("/subscriptions");
                 }
                 return;
             }
 
-            if(book.alreadyExists) {
+            if(bookResult.alreadyExists) {
+                console.log('Book already exists (handled during creation), redirecting...');
                 toast.info("Book with same title already exists.");
-                form.reset()
-                router.push(`/books/${book.data.slug}`)
+                form.reset();
+                router.push(`/books/${bookResult.data.slug}`);
                 return;
             }
 
-            const segments = await saveBookSegments(book.data._id, userId, parsedPDF.content);
+            console.log('Saving book segments...');
+            const segmentsResult = await saveBookSegments(bookResult.data._id, userId, parsedPDF.content);
 
-            if(!segments.success) {
+            if(!segmentsResult.success) {
+                console.error('Failed to save book segments:', segmentsResult.error);
                 toast.error("Failed to save book segments");
-                throw new Error("Failed to save book segments");
+                return;
             }
 
-            form.reset();
-            router.push('/');
+            console.log('Upload process complete, redirecting to book page.');
+            toast.success("Book synthesized successfully!");
+            router.push(`/books/${bookResult.data.slug}`);
         } catch (error) {
-            console.error(error);
-
-            toast.error("Failed to upload book. Please try again later.");
+            console.error('Critical error during book synthesis:', error);
+            toast.error("Something went wrong while synthesizing your book.");
         } finally {
             setIsSubmitting(false);
         }
@@ -150,7 +164,10 @@ const UploadForm = () => {
 
             <div className="new-book-wrapper">
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                        console.error('Form validation failed:', errors);
+                        toast.error("Please fill in all required fields correctly.");
+                    })} className="space-y-8">
                         {/* 1. PDF File Upload */}
                         <FileUploader
                             control={form.control}
@@ -235,8 +252,12 @@ const UploadForm = () => {
                         />
 
                         {/* 6. Submit Button */}
-                        <Button type="submit" className="form-btn" disabled={isSubmitting}>
-                            Begin Synthesis
+                        <Button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="form-btn shadow-soft-md active:scale-[0.98]"
+                        >
+                            {isSubmitting ? 'Synthesizing...' : 'Begin Synthesis'}
                         </Button>
                     </form>
                 </Form>

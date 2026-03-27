@@ -101,6 +101,7 @@ const HeroSection = () => {
                                     width={280}
                                     height={280}
                                     className="object-contain w-full h-auto max-w-[420px]"
+                                    style={{ height: 'auto' }}
                                     priority
                                 />
                             </button>

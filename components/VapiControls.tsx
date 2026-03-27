@@ -57,6 +57,7 @@ const VapiControls = ({ book }: { book: IBook }) => {
                             width={120}
                             height={180}
                             className="vapi-cover-image !w-[120px] !h-auto"
+                            style={{ height: 'auto' }}
                             priority
                         />
                         <div className="vapi-mic-wrapper relative">
