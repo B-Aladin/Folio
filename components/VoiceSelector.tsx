@@ -1,58 +1,95 @@
-"use client";
+'use client';
 
 import React from 'react';
-import { VoiceSelectorProps } from '@/types';
-import { voiceOptions, voiceCategories } from '@/lib/constants';
+import { voiceCategories, voiceOptions } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { Check, Volume2 } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { VoiceSelectorProps } from '@/types';
 
-const VoiceSelector = ({ value, onChange, disabled }: VoiceSelectorProps) => {
+const VoiceSelector = ({ value, onChange, disabled, className }: VoiceSelectorProps) => {
     return (
-        <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {Object.entries(voiceOptions).map(([key, voice]) => {
-                    const isSelected = value === key;
-                    
-                    return (
-                        <div
-                            key={key}
-                            onClick={() => !disabled && onChange(key)}
-                            className={cn(
-                                "voice-selector-option group relative",
-                                isSelected ? "voice-selector-option-selected" : "voice-selector-option-default",
-                                disabled && "voice-selector-option-disabled"
-                            )}
-                        >
-                            <div className="flex items-center justify-between w-full">
-                                <div className="flex items-center gap-3">
-                                    <div className={cn(
-                                        "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                                        isSelected ? "bg-[#212a3b] text-white" : "bg-gray-100 text-gray-400 group-hover:bg-gray-200"
-                                    )}>
-                                        <Volume2 size={20} />
-                                    </div>
-                                    <div className="text-left">
-                                        <p className={cn(
-                                            "font-bold text-lg leading-tight",
-                                            isSelected ? "text-[#212a3b]" : "text-gray-700"
-                                        )}>
-                                            {voice.name}
-                                        </p>
-                                        <p className="text-sm text-gray-500 line-clamp-1">
+        <div className={cn('space-y-6', className)}>
+            <RadioGroup
+                value={value}
+                onValueChange={onChange}
+                disabled={disabled}
+                className="space-y-8"
+            >
+                {/* Male Voices */}
+                <div className="space-y-4">
+                    <h4 className="text-sm font-medium text-[#777]">Male Voices</h4>
+                    <div className="voice-selector-options">
+                        {voiceCategories.male.map((voiceId) => {
+                            const voice = voiceOptions[voiceId as keyof typeof voiceOptions];
+                            const isSelected = value === voiceId;
+                            return (
+                                <Label
+                                    key={voiceId}
+                                    className={cn(
+                                        'voice-selector-option',
+                                        isSelected ? 'voice-selector-option-selected' : 'voice-selector-option-default',
+                                        disabled && 'voice-selector-option-disabled'
+                                    )}
+                                >
+                                    <RadioGroupItem value={voiceId} id={voiceId} className="sr-only" />
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex items-center gap-2">
+                                            <div className={cn(
+                                                "w-4 h-4 rounded-full border flex items-center justify-center",
+                                                isSelected ? "border-[#663820]" : "border-gray-300"
+                                            )}>
+                                                {isSelected && <div className="w-2 h-2 rounded-full bg-[#663820]" />}
+                                            </div>
+                                            <span className="font-bold text-[#212a3b]">{voice.name}</span>
+                                        </div>
+                                        <p className="text-xs text-[#777] leading-relaxed">
                                             {voice.description}
                                         </p>
                                     </div>
-                                </div>
-                                {isSelected && (
-                                    <div className="bg-[#212a3b] rounded-full p-1 text-white">
-                                        <Check size={14} />
+                                </Label>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Female Voices */}
+                <div className="space-y-4">
+                    <h4 className="text-sm font-medium text-[#777]">Female Voices</h4>
+                    <div className="voice-selector-options">
+                        {voiceCategories.female.map((voiceId) => {
+                            const voice = voiceOptions[voiceId as keyof typeof voiceOptions];
+                            const isSelected = value === voiceId;
+                            return (
+                                <Label
+                                    key={voiceId}
+                                    className={cn(
+                                        'voice-selector-option',
+                                        isSelected ? 'voice-selector-option-selected' : 'voice-selector-option-default',
+                                        disabled && 'voice-selector-option-disabled'
+                                    )}
+                                >
+                                    <RadioGroupItem value={voiceId} id={voiceId} className="sr-only" />
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex items-center gap-2">
+                                            <div className={cn(
+                                                "w-4 h-4 rounded-full border flex items-center justify-center",
+                                                isSelected ? "border-[#663820]" : "border-gray-300"
+                                            )}>
+                                                {isSelected && <div className="w-2 h-2 rounded-full bg-[#663820]" />}
+                                            </div>
+                                            <span className="font-bold text-[#212a3b]">{voice.name}</span>
+                                        </div>
+                                        <p className="text-xs text-[#777] leading-relaxed">
+                                            {voice.description}
+                                        </p>
                                     </div>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+                                </Label>
+                            );
+                        })}
+                    </div>
+                </div>
+            </RadioGroup>
         </div>
     );
 };
