@@ -1,6 +1,6 @@
 import React from 'react'
 import HeroSection from "@/components/HeroSection";
-import { sampleBooks } from "../../lib/constants";
+import { sampleBooks } from "@/lib/constants";
 import BookCard from "@/components/BookCard";
 import {getAllBooks} from "@/lib/actions/book.actions";
 import Search from "@/components/Search";
